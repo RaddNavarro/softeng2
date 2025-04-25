@@ -1,0 +1,4 @@
+{
+    "mongoURI": "mongodb+srv://radiannavarro:batito20@dlsociety.uk5dn.mongodb.net/?retryWrites=true&w=majority&appName=DLSociety",
+    "jwtUsersToken": "defaultsecrettoken"
+}
