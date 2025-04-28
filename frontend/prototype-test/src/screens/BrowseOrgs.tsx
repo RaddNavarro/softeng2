@@ -48,9 +48,7 @@ const BrowseOrgs: React.FC<Props> = ({ navigation }) => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -60,7 +58,8 @@ const BrowseOrgs: React.FC<Props> = ({ navigation }) => {
   const fetchData = async () => {
     axios.defaults.withCredentials = true;
     try {
-      const res = await axios.get("http://10.32.105.0:5000/api/studentOrgs");
+      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
+      const res = await axios.get("http://192.168.1.13:5000/api/studentOrgs");
 
       if (res.data.msg) {
         console.log(res.data.msg);
@@ -170,11 +169,16 @@ const BrowseOrgs: React.FC<Props> = ({ navigation }) => {
 
   const StudentOrgsCard = ({ item }) => {
     return (
-      <View style={browseOrgsStyles.card}>
+      <TouchableOpacity
+        style={browseOrgsStyles.card}
+        onPress={() =>
+          navigation.navigate("StudentOrgs", { studentOrgsData: item })
+        }
+      >
         <View style={browseOrgsStyles.imagePlaceholder} />
         <Text style={browseOrgsStyles.name}>{item.name}</Text>
         <Text style={browseOrgsStyles.category}>{item.category}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -203,8 +207,14 @@ const BrowseOrgs: React.FC<Props> = ({ navigation }) => {
         data={studentOrgs}
         numColumns={2}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={browseOrgsStyles.list}
+        contentContainerStyle={[
+          browseOrgsStyles.list,
+          { paddingTop: HEADER_HEIGHT + 16, paddingBottom: 32 },
+        ]}
         renderItem={StudentOrgsCard}
+        ListEmptyComponent={() => (
+          <Text style={{ fontSize: 20 }}>No posts available</Text>
+        )}
         onMomentumScrollBegin={onMomentumScrollBegin}
         onMomentumScrollEnd={onMomentumScrollEnd}
         onScrollEndDrag={onScrollEndDrag}

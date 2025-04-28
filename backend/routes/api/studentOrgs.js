@@ -40,6 +40,7 @@ router.post(
         .not()
         .isEmpty(),
       check("category", "Category is required").not().isEmpty(),
+      check("bio", "A short bio is required").not().isEmpty(),
     ],
   ],
   async (req, res) => {
@@ -49,7 +50,7 @@ router.post(
       return res.json({ errors: errors.array() });
     }
 
-    const { name, collegeDepartment, category } = req.body;
+    const { name, collegeDepartment, category, bio, description } = req.body;
 
     //Build studentOrgs object
     const studentOrgsFields = {};
@@ -58,6 +59,8 @@ router.post(
     if (category) studentOrgsFields.category = category;
     if (collegeDepartment)
       studentOrgsFields.collegeDepartment = collegeDepartment;
+    if (bio) studentOrgsFields.bio = bio;
+    studentOrgsFields.description = description;
 
     try {
       let studentOrgs = await StudentOrgs.findOne({ user: req.user.id });

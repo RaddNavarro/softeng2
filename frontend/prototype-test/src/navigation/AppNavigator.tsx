@@ -5,7 +5,6 @@ import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import LogIn from "../screens/LogIn";
 import Home from "../screens/Home";
 import Calendar from "../screens/Calendar";
-import Rewards from "../screens/Rewards";
 import Profile from "../screens/Profile";
 import Announcements from "../screens/Announcements";
 import {
@@ -27,6 +26,9 @@ import { Props } from "../navigation/props";
 import Preferences from "../screens/Preferences";
 import BrowseOrgs from "../screens/BrowseOrgs";
 import MyHeaders from "../screens/MyHeader";
+import StudentOrgs from "../screens/StudentOrgs";
+import axios from "axios";
+import CreatePost from "../screens/CreatePost";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,7 +75,6 @@ const HomeScreenNavigator: React.FC<Props> = ({ navigation }) => {
       })}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Rewards" component={Rewards} />
       <Tab.Screen
         name="Calendar"
         component={Calendar}
@@ -121,11 +122,30 @@ const AnnouncementNav: React.FC<Props> = ({ navigation }) => {
 const AppNavigator = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
+  // const [auth, setAuth] = useState(false);
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const status = await AsyncStorage.getItem("isLoggedIn");
-        setIsLoggedIn(status === "true");
+        const token = await AsyncStorage.getItem("token");
+        if (token) {
+          // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
+          const res2 = await axios.get("http://192.168.1.13:5000/authUser", {
+            headers: { "x-auth-token": token },
+          });
+
+          if (res2.data.msg === "Success") {
+            setIsLoggedIn(status === "true");
+            console.log("authenticated");
+          } else {
+            setIsLoggedIn(status === "false");
+            console.log("not auth");
+          }
+        } else {
+          setIsLoggedIn(status === "false");
+          console.log("not auth");
+        }
       } catch (error) {
         console.error("Error fetching login status:", error);
       }
@@ -146,9 +166,12 @@ const AppNavigator = () => {
       >
         <Stack.Screen name="LogIn" component={LogIn} />
         <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="CreatePost" component={CreatePost} />
+        <Stack.Screen name="Preferences" component={Preferences} />
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="BrowseOrgs" component={BrowseOrgs} />
         <Stack.Screen name="Calendar" component={Calendar} />
+        <Stack.Screen name="StudentOrgs" component={StudentOrgs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

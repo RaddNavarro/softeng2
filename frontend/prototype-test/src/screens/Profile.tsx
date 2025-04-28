@@ -54,7 +54,8 @@ const Profile: React.FC<Props> = ({ navigation }) => {
     axios.defaults.withCredentials = true;
     try {
       const token = await AsyncStorage.getItem("token");
-      const res = await axios.get("http://10.32.105.0:5000/api/profile/me", {
+      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
+      const res = await axios.get("http://192.168.1.13:5000/api/profile/me", {
         headers: {
           "x-auth-token": token,
         },

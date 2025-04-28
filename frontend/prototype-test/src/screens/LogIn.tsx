@@ -44,6 +44,7 @@ const LogIn: React.FC<Props> = ({ navigation }) => {
     e.preventDefault();
     axios.defaults.withCredentials = true;
     try {
+      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
       const res = await axios.post("http://192.168.1.13:5000/api/auth", {
         email,
         password,
@@ -55,6 +56,7 @@ const LogIn: React.FC<Props> = ({ navigation }) => {
         AsyncStorage.setItem("token", res.data.token);
         AsyncStorage.setItem("isLoggedIn", JSON.stringify(true));
 
+        // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
         const res2 = await axios.get("http://192.168.1.13:5000/api/auth", {
           headers: { "x-auth-token": res.data.token },
         });
