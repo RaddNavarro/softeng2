@@ -12,6 +12,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   StatusBar,
+  Modal,
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { Props } from "../navigation/props";
@@ -48,22 +49,44 @@ const tabIcons = [
 ];
 
 const Home: React.FC<Props> = ({ navigation }) => {
-  const [ipAddress, setIpAddress] = useState();
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [allowed, setAllowed] = useState(false);
+  // const [auth, setAuth] = useState(false);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setIsLoading(true);
+
     setTimeout(() => {
       setRefreshing(false);
-      setIsLoading(false);
+      fetchPosts();
     }, 2000);
   }, []);
 
   useEffect(() => {
     updateUserLoggedIn();
+    // checkAuth();
   }, []);
+
+  // const checkAuth = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem("token");
+  //     const res = await axios.get("http://192.168.1.13:5000/authUser", {
+  //       headers: { "x-auth-token": token },
+  //     });
+
+  //     if (res.data.msg === "Success") {
+  //       setAuth(true);
+  //       console.log("authenticated");
+  //     } else {
+  //       setAuth(false);
+  //       console.log("not auth");
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   const updateUserLoggedIn = async () => {
     axios.defaults.withCredentials = true;
@@ -72,7 +95,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
       console.log(token);
       // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
       const res = await axios.post(
-        "http://10.32.105.0:5000/api/auth/updateUsers",
+        "http://192.168.1.13:5000/api/auth/updateUsers",
         {},
         {
           headers: {
@@ -88,6 +111,50 @@ const Home: React.FC<Props> = ({ navigation }) => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [posts]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
+      const res = await axios.get("http://192.168.1.13:5000/api/posts");
+
+      if (res) {
+        setPosts(res.data);
+      } else {
+        setPosts([]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
+      const res = await axios.get("http://192.168.1.13:5000/api/profile/me", {
+        headers: { "x-auth-token": token },
+      });
+
+      if (res.data.msg === "There is no profile for this user") {
+        setAllowed(false);
+        console.log("not allowed");
+      } else {
+        setAllowed(true);
+        console.log("allowed");
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -214,9 +281,73 @@ const Home: React.FC<Props> = ({ navigation }) => {
   //   );
   // }
 
+  const deletePost = async (postsId) => {
+    try {
+      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
+      const res = await axios.delete(
+        `http://192.168.1.13:5000/api/posts/${postsId}`
+      );
+      if (res.data.msg === "Post not found") {
+        console.log(res.data.msg);
+      } else {
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const RenderPosts = ({ item }) => {
+    return (
+      <TouchableOpacity onPress={() => deletePost(item._id)}>
+        <View
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 16,
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOpacity: 0.05,
+            shadowRadius: 3,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: "#333",
+                marginBottom: 4,
+              }}
+            >
+              {item.title}
+            </Text>
+            <Text style={{ fontSize: 13, color: "#666" }}>
+              {item.profile.firstName} {item.profile.lastName}
+            </Text>
+            <Text style={{ fontSize: 13, color: "#666" }}>
+              Maybe a preview here idk
+            </Text>
+          </View>
+          <View
+            style={{
+              width: 60,
+              height: 60,
+              backgroundColor: "#e0e0e0",
+              borderRadius: 6,
+              marginLeft: 12,
+            }}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <>
-      {/* Header */}
       <Animated.View
         style={[
           headerStyles.view,
@@ -233,28 +364,19 @@ const Home: React.FC<Props> = ({ navigation }) => {
       {/* Content */}
       <Animated.FlatList
         style={{ backgroundColor: "#E7F0E6" }}
+        contentContainerStyle={{
+          paddingTop: HEADER_HEIGHT + 16,
+          paddingBottom: 32,
+        }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: true }
         )}
-        data={dummyPosts}
+        data={posts}
         keyExtractor={(item, index) => item.title + index.toString()}
-        renderItem={({ item }) => (
-          <>
-            {/* test daata to see if the header animations work */}
-            <Text style={{ fontSize: 100, top: 150 }}>{item.title}</Text>
-            <Button
-              title="Profile Page"
-              onPress={() => navigation.navigate("Profile")}
-            />
-
-            <Button
-              title="Announcements Page"
-              onPress={() => navigation.navigate("Announcements")}
-            />
-
-            {/* insert data here */}
-          </>
+        renderItem={RenderPosts}
+        ListEmptyComponent={() => (
+          <Text style={{ fontSize: 20 }}>No posts available</Text>
         )}
         onMomentumScrollBegin={onMomentumScrollBegin}
         onMomentumScrollEnd={onMomentumScrollEnd}
@@ -279,11 +401,14 @@ const Home: React.FC<Props> = ({ navigation }) => {
         <Surface style={headerStyles.rowContainer}>
           {tabIcons.map((item, index) => (
             <TouchableOpacity
+              disabled={index === 2 ? (allowed ? false : true) : false}
               key={index}
               style={[index === 2 && headerStyles.plusIconStyles]}
               onPress={() => {
                 if (index === 1) {
                   navigation.navigate("BrowseOrgs");
+                } else if (index === 2) {
+                  navigation.navigate("CreatePost");
                 } else if (index === 3) {
                   navigation.navigate("Calendar");
                 } else if (index === 4) {
@@ -303,6 +428,8 @@ const Home: React.FC<Props> = ({ navigation }) => {
         </Surface>
       </Animated.View>
     </>
+    //   ) : null}
+    // </>
   );
 };
 

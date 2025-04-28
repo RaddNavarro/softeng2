@@ -1,25 +1,31 @@
-import { Text, View, FlatList, TouchableOpacity, Alert, ScrollView } from "react-native";
+import {
+  Text,
+  View,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+} from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import Checkbox from "expo-checkbox";
-import { Props } from '../navigation/props'
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Props } from "../navigation/props";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { preferencesStyles } from "../styles/styles";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useState } from "react";
 
 const Preferences: React.FC<Props> = ({ navigation }) => {
-
   const [isCheckedEvents, setIsCheckedEvents] = useState(false);
   const [isCheckedForum, setIsCheckedForum] = useState(false);
   const [isCheckedAnnouncement, setIsCheckedAnnouncement] = useState(false);
   return (
-
     <View style={preferencesStyles.container}>
       <View style={preferencesStyles.header} />
       <ScrollView contentContainerStyle={preferencesStyles.content}>
         <Text style={preferencesStyles.title}>Preferences</Text>
         <Text style={preferencesStyles.subtitle}>
-          What are you using this app for? This can be changed in the settings later.
+          What are you using this app for? This can be changed in the settings
+          later.
         </Text>
 
         <View style={preferencesStyles.checkboxRow}>
@@ -47,7 +53,9 @@ const Preferences: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <View style={preferencesStyles.checkboxRow}>
-          <Text style={preferencesStyles.checkboxLabel}>Official Announcements</Text>
+          <Text style={preferencesStyles.checkboxLabel}>
+            Official Announcements
+          </Text>
           <Checkbox
             style={[
               preferencesStyles.checkbox,
@@ -60,15 +68,13 @@ const Preferences: React.FC<Props> = ({ navigation }) => {
 
         <TouchableOpacity
           style={preferencesStyles.continueButton}
-          onPress={() => navigation.navigate('HomeScreenNavigator')}
+          onPress={() => navigation.navigate("Home")}
         >
           <Text style={preferencesStyles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
-
-
-  )
-}
+  );
+};
 
 export default Preferences;

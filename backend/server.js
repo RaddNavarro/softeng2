@@ -1,6 +1,7 @@
 const express = require("express");
 
 const connectDB = require("./config/db");
+const { authUser } = require("./middleware/authUser");
 
 const app = express();
 
@@ -18,6 +19,12 @@ app.use("/api/profile", require("./routes/api/profile"));
 app.use("/api/auth", require("./routes/api/auth"));
 app.use("/api/admin", require("./routes/api/admin"));
 app.use("/api/studentOrgs", require("./routes/api/studentOrgs"));
+app.use("/api/posts", require("./routes/api/posts"));
+
+// check if user is still authenticated
+app.get("/authUser", authUser, (req, res) => {
+  return res.json({ msg: "Success" });
+});
 
 const PORT = process.env.PORT || 5000;
 
