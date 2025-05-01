@@ -18,6 +18,7 @@ import MyHeaders from "./MyHeader";
 import { Surface } from "react-native-paper";
 import Icons, { icon } from "../components/Icons";
 import axios from "axios";
+import { MY_IP } from "../components/config";
 
 const mockData = new Array(12).fill(null).map((_, index) => ({
   id: index.toString(),
@@ -58,8 +59,7 @@ const BrowseOrgs: React.FC<Props> = ({ navigation }) => {
   const fetchData = async () => {
     axios.defaults.withCredentials = true;
     try {
-      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-      const res = await axios.get("http://192.168.1.13:5000/api/studentOrgs");
+      const res = await axios.get(`http://${MY_IP}:5000/api/studentOrgs`);
 
       if (res.data.msg) {
         console.log(res.data.msg);

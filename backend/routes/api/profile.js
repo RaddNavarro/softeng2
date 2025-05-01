@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../../middleware/auth");
-const { check, validationResult } = require("express-validator");
+const { check, validationResult, body } = require("express-validator");
 
 const Profile = require("../../models/Profile");
 const Users = require("../../models/Users");
@@ -42,9 +42,9 @@ router.post(
       check("collegeDepartment", "College Department is required")
         .not()
         .isEmpty(),
-      check("joinedOrgs", "Joined Student Orgs is required").not().isEmpty(),
-      check("role", "Roles is required").not().isEmpty(),
       check("yearLvl", "Year Level is required").not().isEmpty(),
+      // check("orgStatus.*.orgName", " Org name is required").not().isEmpty(),
+      // check("orgStatus.*.orgRole", " Org role is required").not().isEmpty(),
     ],
   ],
   async (req, res) => {
@@ -60,10 +60,13 @@ router.post(
       contactNum,
       bio,
       collegeDepartment,
-      joinedOrgs,
-      role,
       yearLvl,
+      orgStatus,
     } = req.body;
+
+    // const {
+    //   orgStatus: [{ orgName, orgRole }],
+    // } = req.body;
 
     //Build profile object
     const profileFields = {};
@@ -71,12 +74,7 @@ router.post(
     if (firstName) profileFields.firstName = firstName;
     if (lastName) profileFields.lastName = lastName;
     if (collegeDepartment) profileFields.collegeDepartment = collegeDepartment;
-    if (joinedOrgs) {
-      profileFields.joinedOrgs = joinedOrgs
-        .split(",")
-        .map((joinedOrgs) => joinedOrgs.trim());
-    }
-    if (role) profileFields.role = role;
+    if (orgStatus) profileFields.orgStatus = orgStatus;
     if (yearLvl) profileFields.yearLvl = yearLvl;
     profileFields.contactNum = contactNum;
     profileFields.bio = bio;
@@ -100,7 +98,7 @@ router.post(
       profile = new Profile(profileFields);
 
       await profile.save();
-      res.json(profile);
+      res.json(profile.populate("orgStatus.orgID"));
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Server error");

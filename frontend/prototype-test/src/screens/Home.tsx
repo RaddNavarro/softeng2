@@ -29,6 +29,9 @@ import Icons, { icon } from "../components/Icons";
 import { Surface } from "react-native-paper";
 import { COLORS } from "../components/colors";
 import { NetworkInfo } from "react-native-network-info";
+import NetInfo from "@react-native-community/netinfo";
+import { getIpAddressAsync } from "expo-network";
+import { MY_IP } from "../components/config";
 
 const Stack = createNativeStackNavigator();
 
@@ -124,8 +127,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
   const fetchPosts = async () => {
     try {
-      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-      const res = await axios.get("http://192.168.1.13:5000/api/posts");
+      const res = await axios.get(`http://${MY_IP}:5000/api/posts`);
 
       if (res) {
         setPosts(res.data);
@@ -140,9 +142,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
   const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
-      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-      const res = await axios.get("http://192.168.1.13:5000/api/profile/me", {
+      const res = await axios.get(`http://${MY_IP}:5000/api/profile/me`, {
         headers: { "x-auth-token": token },
       });
 
@@ -285,7 +285,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     try {
       // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
       const res = await axios.delete(
-        `http://192.168.1.13:5000/api/posts/${postsId}`
+        `http://${MY_IP}:5000/api/posts/${postsId}`
       );
       if (res.data.msg === "Post not found") {
         console.log(res.data.msg);
@@ -299,7 +299,9 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
   const RenderPosts = ({ item }) => {
     return (
-      <TouchableOpacity onPress={() => deletePost(item._id)}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("ViewPost", { postData: item })}
+      >
         <View
           style={{
             backgroundColor: "#ffffff",
