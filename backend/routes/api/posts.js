@@ -42,7 +42,7 @@ router.post(
     if (studentOrgs) postsFields.studentOrgs = studentOrgs;
 
     try {
-      let posts = await Posts.findOne({ profile: profile._id });
+      // let posts = await Posts.findOne({ profile: profile._id });
 
       // if (posts) {
       //   // Update posts
@@ -57,7 +57,7 @@ router.post(
       // }
 
       // Create
-      posts = new Posts(postsFields);
+      let posts = new Posts(postsFields);
 
       await posts.save();
       res.json(posts);

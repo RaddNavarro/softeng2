@@ -29,6 +29,7 @@ import MyHeaders from "../screens/MyHeader";
 import StudentOrgs from "../screens/StudentOrgs";
 import axios from "axios";
 import CreatePost from "../screens/CreatePost";
+import ViewPost from "../screens/ViewPost";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -172,6 +173,7 @@ const AppNavigator = () => {
         <Stack.Screen name="BrowseOrgs" component={BrowseOrgs} />
         <Stack.Screen name="Calendar" component={Calendar} />
         <Stack.Screen name="StudentOrgs" component={StudentOrgs} />
+        <Stack.Screen name="ViewPost" component={ViewPost} />
       </Stack.Navigator>
     </NavigationContainer>
   );

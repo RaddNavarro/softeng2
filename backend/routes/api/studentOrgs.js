@@ -4,6 +4,7 @@ const auth = require("../../middleware/auth");
 const { check, validationResult } = require("express-validator");
 
 const StudentOrgs = require("../../models/StudentOrgs");
+const Profile = require("../../models/Profile");
 
 // @route       GET api/studentOrgs/me
 // @desc        Get current student Org
@@ -16,7 +17,7 @@ router.get("/me", auth, async (req, res) => {
     }).populate("user", ["email"]);
 
     if (!studentOrgs) {
-      return res.json({ msg: "This student organiztion doesn't exist" });
+      return res.json({ msg: "Student Organzation not found" });
     }
 
     res.json(studentOrgs);
@@ -89,8 +90,8 @@ router.post(
   }
 );
 
-// @route       GET api/profile
-// @desc        Get all profiles
+// @route       GET api/studentOrgs
+// @desc        Get all studentOrgs
 // @access      Public
 
 router.get("/", async (req, res) => {
@@ -99,6 +100,74 @@ router.get("/", async (req, res) => {
     res.json(studentOrgs);
   } catch (error) {
     console.error(error.message);
+    res.status(500).send("Server error");
+  }
+});
+
+// @route       POST api/studentOrgs/:studentOrgId
+// @desc        Add the profile to the org members list
+// @access      Private
+
+router.post("/:studentOrgId", auth, async (req, res) => {
+  try {
+    const studentOrgId = req.params.studentOrgId;
+
+    const profile = await Profile.findOne({ user: req.user.id }).populate(
+      "user",
+      ["email"]
+    );
+
+    const profileExists = await StudentOrgs.findOne({
+      _id: studentOrgId,
+    })
+      .where("members")
+      .equals(profile._id);
+
+    console.log(profile._id);
+
+    if (!profile) {
+      return res.json({ msg: "Profile not found" });
+    }
+
+    if (profileExists) {
+      console.log(profileExists);
+      return res.json({ msg: "Already a member" });
+    }
+
+    const studentOrgs = await StudentOrgs.findOneAndUpdate(
+      { _id: studentOrgId },
+      {
+        $push: {
+          members: profile._id,
+        },
+      },
+      { new: true }
+    ).populate("members");
+
+    const profileUpdate = await Profile.findOneAndUpdate(
+      { user: req.user.id },
+      {
+        $push: {
+          orgStatus: {
+            orgID: studentOrgId,
+            orgName: studentOrgs.name,
+            orgRole: "follower",
+          },
+        },
+      }
+    );
+
+    // res.json(studentOrgs);
+    console.log(profileExists);
+    console.log(profileUpdate);
+    res.json({ msg: "Success" });
+  } catch (error) {
+    console.error(error.message);
+
+    if (error.kind == "ObjectId") {
+      return res.json({ msg: "Profile not found" });
+    }
+
     res.status(500).send("Server error");
   }
 });

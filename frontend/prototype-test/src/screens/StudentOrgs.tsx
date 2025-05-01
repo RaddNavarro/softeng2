@@ -10,6 +10,7 @@ import {
   BackHandler,
   Button,
   RefreshControl,
+  ToastAndroid,
 } from "react-native";
 import { COLORS } from "../components/colors";
 import { Props } from "../navigation/props";
@@ -19,6 +20,9 @@ import Icons, { icon } from "../components/Icons";
 import axios from "axios";
 import { headerStyles } from "../styles/styles";
 import Feather from "react-native-vector-icons/Feather";
+import { MY_IP } from "../components/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
 
 const dummyPosts = [
   { id: "1", title: "Insert post here hehe hoho", username: "User One" },
@@ -72,7 +76,7 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
   const fetchPosts = async () => {
     try {
       // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-      const res = await axios.get("http://192.168.1.13:5000/api/posts");
+      const res = await axios.get(`http://${MY_IP}:5000/api/posts`);
 
       if (res) {
         let postsArray = [];
@@ -184,6 +188,39 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
     extrapolate: "clamp",
   });
 
+  const showToast = () => {
+    Toast.show({
+      type: "error",
+      text1: "Already a member",
+      visibilityTime: 10000,
+    });
+  };
+
+  const joinOrg = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await axios.post(
+        `http://${MY_IP}:5000/api/studentOrgs/${studentOrgsData._id}`,
+        {},
+        { headers: { "x-auth-token": token } }
+      );
+
+      if (res.data.msg !== "Success") {
+        console.log(res.data.msg);
+        ToastAndroid.show(res.data.msg, ToastAndroid.SHORT);
+        // Toast.show({
+        //   type: "info",
+        //   text1: "This is an info message",
+        // });
+        return;
+      }
+
+      console.log(res.data.msg);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
       {/* Header */}
@@ -242,6 +279,17 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
               {studentOrgsData.bio}
             </Text>
           </View>
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#DFBE73",
+              paddingVertical: 8,
+              paddingHorizontal: 16,
+              borderRadius: 20,
+            }}
+            onPress={joinOrg}
+          >
+            <Text style={{ color: "#ffffff", fontWeight: "bold" }}>Follow</Text>
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Org Name */}

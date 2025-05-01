@@ -20,6 +20,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Svg, Path } from "react-native-svg";
+import { MY_IP } from "../components/config";
 
 const { width, height } = Dimensions.get("window");
 
@@ -37,15 +38,12 @@ const LogIn: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [backendErrorMsg, setBackendErrorMsg] = useState<string[]>([]);
-  const [dataa, setDataa] = useState();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     axios.defaults.withCredentials = true;
     try {
-      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-      const res = await axios.post("http://192.168.1.13:5000/api/auth", {
+      const res = await axios.post(`http://${MY_IP}:5000/api/auth`, {
         email,
         password,
       });
@@ -56,8 +54,7 @@ const LogIn: React.FC<Props> = ({ navigation }) => {
         AsyncStorage.setItem("token", res.data.token);
         AsyncStorage.setItem("isLoggedIn", JSON.stringify(true));
 
-        // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-        const res2 = await axios.get("http://192.168.1.13:5000/api/auth", {
+        const res2 = await axios.get(`http://${MY_IP}:5000/api/auth`, {
           headers: { "x-auth-token": res.data.token },
         });
         if (res2.data.hasLoggedIn === true) {

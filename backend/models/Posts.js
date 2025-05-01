@@ -7,11 +7,10 @@ const PostsSchema = new mongoose.Schema({
   },
   studentOrgs: {
     type: String,
-    required: true,
+    ref: "student-orgs",
   },
   title: {
     type: String,
-    required: true,
   },
   description: {
     type: String,

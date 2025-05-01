@@ -28,6 +28,12 @@ const StudentOrgsSchema = new mongoose.Schema({
   members: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "profiles",
+    // {
+    //   profileID: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "profiles",
+    //   },
+    // },
   },
 });
 

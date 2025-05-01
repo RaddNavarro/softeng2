@@ -23,18 +23,24 @@ const ProfileSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  joinedOrgs: {
-    type: [String],
-    required: true,
-  },
   eventsJoined: {
     type: [String],
     required: true,
   },
-  role: {
-    type: String,
-    required: true,
-  },
+  orgStatus: [
+    {
+      orgID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "student-orgs",
+      },
+      orgName: {
+        type: String,
+      },
+      orgRole: {
+        type: String,
+      },
+    },
+  ],
   yearLvl: {
     type: String,
     required: true,

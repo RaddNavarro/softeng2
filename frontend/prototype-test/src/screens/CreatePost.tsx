@@ -22,6 +22,7 @@ import Feather from "react-native-vector-icons/Feather";
 import { Dropdown } from "react-native-element-dropdown";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MY_IP } from "../components/config";
 
 const dummyPosts = [
   { id: "1", title: "Insert post here hehe hoho", username: "User One" },
@@ -72,8 +73,7 @@ const CreatePost: React.FC<Props> = ({ navigation }) => {
 
   const fetchData = async () => {
     try {
-      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-      const res = await axios.get("http://192.168.1.13:5000/api/studentOrgs");
+      const res = await axios.get(`http://${MY_IP}:5000/api/studentOrgs`);
       console.log(res.data[0].name);
 
       if (res) {
@@ -205,9 +205,8 @@ const CreatePost: React.FC<Props> = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("token");
 
-      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
       const res = await axios.post(
-        "http://192.168.1.13:5000/api/posts",
+        `http://${MY_IP}:5000/api/posts`,
         { title, description, studentOrgs },
         { headers: { "x-auth-token": token } }
       );
