@@ -81,7 +81,7 @@ Once you are in the editor open two new terminals:
   ```
 
   After typing this, it should generate a QR code. Use you phone with Expo Go installed to scan the code to open the app on your phone.
-  Or you can run the command the below or after doing `npm start` press the 'a' key on the terminal
+  Or you can run the command below or after doing `npm start` press the 'a' key on the terminal
 
   ```
   npm run android
