@@ -1,5 +1,5 @@
 const express = require("express");
-
+const cors = require("cors");
 const connectDB = require("./config/db");
 const { authUser } = require("./middleware/authUser");
 
@@ -10,6 +10,8 @@ connectDB();
 
 //Initilize Middleware
 app.use(express.json({ extended: false }));
+
+app.use(cors());
 
 app.get("/", (req, res) => res.send("Server is running"));
 
@@ -28,4 +30,6 @@ app.get("/authUser", authUser, (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.listen(5000, "0.0.0.0", () =>
+  console.log(`Server started on port ${PORT}`)
+);

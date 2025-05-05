@@ -30,6 +30,7 @@ import StudentOrgs from "../screens/StudentOrgs";
 import axios from "axios";
 import CreatePost from "../screens/CreatePost";
 import ViewPost from "../screens/ViewPost";
+import { MY_IP } from "../components/config";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -132,7 +133,7 @@ const AppNavigator = () => {
         const token = await AsyncStorage.getItem("token");
         if (token) {
           // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-          const res2 = await axios.get("http://192.168.1.13:5000/authUser", {
+          const res2 = await axios.get(`http://${MY_IP}:5000/authUser`, {
             headers: { "x-auth-token": token },
           });
 
