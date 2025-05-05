@@ -29,7 +29,7 @@ After opening your code editor, open a terminal and make your own **branch**.
   git checkout -b <branch name here>
   ```
 
-  ```
+  ```powershell
   # This is to check if you are in the branch you created
   git branch
   ```
