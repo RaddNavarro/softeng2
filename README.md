@@ -54,26 +54,37 @@ Now just change that IP address and now you are ready to run the app.
 Once you are in the editor open two new terminals:
 
 - On the **first terminal** type:
+
   ```
   cd ./backend
   ```
+
   This will make your terminal go to the **backend folder**, and in there type in the terminal:
+
   ```
   npm run server
   ```
+
   This make so it will run the backend server.
-- - On the **second terminal** type:
+
+- On the **second terminal** type:
+
   ```
   cd ./frontend/prototype-test
   ```
+
   This will make your terminal go to the **frontend folder** where you can run the app itself.
   In the terminal again type:
+
   ```
   npm start
   ```
+
   After typing this, it should generate a QR code. Use you phone with Expo Go installed to scan the code to open the app on your phone.
   Or you can run the command the below or after doing `npm start` press the 'a' key on the terminal
+
   ```
   npm run android
   ```
+
   To run the app on an android emulator.
