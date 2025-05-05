@@ -38,11 +38,13 @@ const LogIn: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [backendErrorMsg, setBackendErrorMsg] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     axios.defaults.withCredentials = true;
     try {
+      console.log(`http://${MY_IP}:5000/api/auth`);
       const res = await axios.post(`http://${MY_IP}:5000/api/auth`, {
         email,
         password,

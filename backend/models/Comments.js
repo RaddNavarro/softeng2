@@ -14,10 +14,9 @@ const CommentsSchema = new mongoose.Schema({
   },
   comments: [
     {
-      commentID: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "comments",
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "comments",
+      default: false,
     },
   ],
 });

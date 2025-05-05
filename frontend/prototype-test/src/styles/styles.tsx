@@ -154,6 +154,95 @@ export const homeStyles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
   },
+
+  card: {
+    backgroundColor: "#F9F9F9",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  postTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#2C7E7B",
+  },
+  postDate: {
+    fontSize: 12,
+    color: "#888",
+    marginBottom: 5,
+  },
+  postBody: {
+    fontSize: 14,
+    color: "#333",
+  },
+  postsSection: {
+    flex: 1,
+    backgroundColor: "#E7F0E6",
+  },
+  verticalList: {
+    paddingBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#444",
+    marginVertical: 10,
+  },
+  postSectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#444",
+    marginTop: 30,
+  },
+  announcementsSection: {
+    backgroundColor: "#E7F0E6",
+  },
+  horizontalList: {
+    paddingRight: 20,
+  },
+  eventCard: {
+    backgroundColor: "#E0F2F1",
+    padding: 15,
+    borderRadius: 10,
+    marginRight: 12,
+    width: 220,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  eventTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#2C7E7B",
+  },
+  eventDate: {
+    fontSize: 13,
+    color: "#555",
+    marginTop: 3,
+  },
+  eventLocation: {
+    fontSize: 13,
+    color: "#777",
+    marginTop: 3,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#999",
+    marginBottom: 10,
+  },
 });
 
 export const headerStyles = StyleSheet.create({

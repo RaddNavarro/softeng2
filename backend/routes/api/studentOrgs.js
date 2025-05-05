@@ -157,9 +157,7 @@ router.post("/:studentOrgId", auth, async (req, res) => {
       }
     );
 
-    // res.json(studentOrgs);
-    console.log(profileExists);
-    console.log(profileUpdate);
+    res.json(profileUpdate);
     res.json({ msg: "Success" });
   } catch (error) {
     console.error(error.message);

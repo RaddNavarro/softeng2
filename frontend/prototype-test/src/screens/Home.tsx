@@ -32,15 +32,42 @@ import { NetworkInfo } from "react-native-network-info";
 import NetInfo from "@react-native-community/netinfo";
 import { getIpAddressAsync } from "expo-network";
 import { MY_IP } from "../components/config";
+import dayjs from "dayjs";
 
 const Stack = createNativeStackNavigator();
 
-const dummyPosts = [
-  { id: "1", title: "Insert post here hehe hoho", username: "User One" },
-  { id: "2", title: "Insert post here hehe hoho", username: "User Two" },
-  { id: "3", title: "Insert post here hehe hoho", username: "User Three" },
-  { id: "4", title: "Insert post here hehe hoho", username: "User Four" },
-  { id: "5", title: "Insert post here hehe hoho", username: "User Five" },
+const events = [
+  {
+    id: "1",
+    title: "CREAM Week 2023",
+    description:
+      "Career readiness and mentorship week with industry professionals",
+    date: "April 17 - 25 (in 1 week)",
+    location: "Student Center",
+    image: "https://via.placeholder.com/100",
+    category: "career",
+    important: true,
+  },
+  {
+    id: "2",
+    title: "Final Exam Prep Session",
+    description: "Group study for calculus final exam",
+    date: "April 20 at 3:00 PM",
+    location: "Library Room 202",
+    image: "https://via.placeholder.com/100",
+    category: "academic",
+    important: true,
+  },
+  {
+    id: "3",
+    title: "Campus Spring Festival",
+    description: "Annual celebration with music, food, and activities",
+    date: "April 22 - 23",
+    location: "Main Quad",
+    image: "https://via.placeholder.com/100",
+    category: "social",
+    important: false,
+  },
 ];
 
 const tabIcons = [
@@ -50,6 +77,40 @@ const tabIcons = [
   { ico1: "calendar", ico2: "calendar-outline", type: icon.Ionicons },
   { ico1: "person", ico2: "person-outline", type: icon.Ionicons },
 ];
+
+const renderEvent = ({ item }) => (
+  <View style={homeStyles.eventCard}>
+    <Text style={homeStyles.eventTitle}>{item.title}</Text>
+    <Text style={homeStyles.eventDate}>{item.date}</Text>
+    <Text style={homeStyles.eventLocation}>{item.location}</Text>
+  </View>
+);
+
+const EventsSection = () => {
+  return (
+    <Animated.View
+      style={[
+        homeStyles.announcementsSection,
+        { paddingTop: 150 + 16, paddingBottom: 32 },
+      ]}
+    >
+      <Text style={homeStyles.sectionTitle}>Announcements</Text>
+      {events.length === 0 ? (
+        <Text style={homeStyles.emptyText}>No announcements available.</Text>
+      ) : (
+        <Animated.FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={events}
+          renderItem={renderEvent}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={homeStyles.horizontalList}
+        />
+      )}
+      <Text style={homeStyles.postSectionTitle}>Latest Posts</Text>
+    </Animated.View>
+  );
+};
 
 const Home: React.FC<Props> = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
@@ -98,7 +159,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
       console.log(token);
       // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
       const res = await axios.post(
-        "http://192.168.1.13:5000/api/auth/updateUsers",
+        `http://${MY_IP}:5000/api/auth/updateUsers`,
         {},
         {
           headers: {
@@ -302,47 +363,13 @@ const Home: React.FC<Props> = ({ navigation }) => {
       <TouchableOpacity
         onPress={() => navigation.navigate("ViewPost", { postData: item })}
       >
-        <View
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            elevation: 2,
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 3,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "600",
-                color: "#333",
-                marginBottom: 4,
-              }}
-            >
-              {item.title}
-            </Text>
-            <Text style={{ fontSize: 13, color: "#666" }}>
-              {item.profile.firstName} {item.profile.lastName}
-            </Text>
-            <Text style={{ fontSize: 13, color: "#666" }}>
-              Maybe a preview here idk
-            </Text>
-          </View>
-          <View
-            style={{
-              width: 60,
-              height: 60,
-              backgroundColor: "#e0e0e0",
-              borderRadius: 6,
-              marginLeft: 12,
-            }}
-          />
+        <View key={item.id} style={homeStyles.card}>
+          {item.image && (
+            <Image source={{ uri: item.image }} style={homeStyles.image} />
+          )}
+          <Text style={homeStyles.postTitle}>{item.title}</Text>
+          {/* <Text style={homeStyles.postDate}>{item.date}</Text> */}
+          <Text style={homeStyles.postBody}>{item.description}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -364,30 +391,30 @@ const Home: React.FC<Props> = ({ navigation }) => {
       </Animated.View>
 
       {/* Content */}
-      <Animated.FlatList
-        style={{ backgroundColor: "#E7F0E6" }}
-        contentContainerStyle={{
-          paddingTop: HEADER_HEIGHT + 16,
-          paddingBottom: 32,
-        }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
-        data={posts}
-        keyExtractor={(item, index) => item.title + index.toString()}
-        renderItem={RenderPosts}
-        ListEmptyComponent={() => (
-          <Text style={{ fontSize: 20 }}>No posts available</Text>
-        )}
-        onMomentumScrollBegin={onMomentumScrollBegin}
-        onMomentumScrollEnd={onMomentumScrollEnd}
-        onScrollEndDrag={onScrollEndDrag}
-        scrollEventThrottle={1}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      />
+      <Animated.View style={[homeStyles.postsSection, { paddingBottom: 85 }]}>
+        <Animated.FlatList
+          // style={{ backgroundColor: "#E7F0E6" }}
+          contentContainerStyle={[homeStyles.verticalList]}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          data={posts}
+          keyExtractor={(item, index) => item.title + index.toString()}
+          renderItem={RenderPosts}
+          ListEmptyComponent={() => (
+            <Text style={{ fontSize: 20 }}>No posts available</Text>
+          )}
+          ListHeaderComponent={EventsSection}
+          onMomentumScrollBegin={onMomentumScrollBegin}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          onScrollEndDrag={onScrollEndDrag}
+          scrollEventThrottle={1}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      </Animated.View>
       {/* Bottom Tab */}
       <Animated.View
         style={[
