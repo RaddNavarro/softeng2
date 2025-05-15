@@ -22,6 +22,7 @@ app.use("/api/auth", require("./routes/api/auth"));
 app.use("/api/admin", require("./routes/api/admin"));
 app.use("/api/studentOrgs", require("./routes/api/studentOrgs"));
 app.use("/api/posts", require("./routes/api/posts"));
+app.use("/api/events", require("./routes/api/events"));
 
 // check if user is still authenticated
 app.get("/authUser", authUser, (req, res) => {
