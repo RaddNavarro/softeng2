@@ -27,12 +27,13 @@ router.post(
       return res.json({ errors: errors.array() });
     }
 
-    const { title, description, studentOrgs } = req.body;
+    const { title, description, studentOrgs, image } = req.body;
     const profile = await Profile.findOne({ user: req.user.id }).populate(
       "user",
       ["email"]
     );
     console.log(profile._id);
+    console.log(image);
 
     //Build posts object
     const postsFields = {};
@@ -40,6 +41,7 @@ router.post(
     if (title) postsFields.title = title;
     if (description) postsFields.description = description;
     if (studentOrgs) postsFields.studentOrgs = studentOrgs;
+    if (image) postsFields.image = image;
 
     try {
       // let posts = await Posts.findOne({ profile: profile._id });

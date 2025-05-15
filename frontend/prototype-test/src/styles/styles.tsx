@@ -153,6 +153,97 @@ export const homeStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
+    marginRight: 100,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    width: "90%",
+    maxHeight: "80%",
+    paddingVertical: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2C7E7B",
+  },
+  modalContent: {
+    padding: 20,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 5,
+    color: "#333",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    backgroundColor: "#FAFAFA",
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
+  },
+  imagePicker: {
+    marginBottom: 20,
+  },
+  placeholderImage: {
+    height: 150,
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 8,
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+  placeholderText: {
+    marginTop: 10,
+    color: "#888",
+  },
+  previewImage: {
+    height: 200,
+    borderRadius: 8,
+    resizeMode: "cover",
+  },
+  postButton: {
+    backgroundColor: "#2C7E7B",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  postButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
 
   card: {
@@ -189,6 +280,7 @@ export const homeStyles = StyleSheet.create({
   postsSection: {
     flex: 1,
     backgroundColor: "#E7F0E6",
+    padding: 20,
   },
   verticalList: {
     paddingBottom: 20,

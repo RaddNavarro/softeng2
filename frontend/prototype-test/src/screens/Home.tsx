@@ -13,11 +13,18 @@ import {
   ActivityIndicator,
   StatusBar,
   Modal,
+  ScrollView,
+  TextInput,
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { Props } from "../navigation/props";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { headerStyles, homeStyles, logInStyles } from "../styles/styles";
+import {
+  createPostStyles,
+  headerStyles,
+  homeStyles,
+  logInStyles,
+} from "../styles/styles";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LogIn from "./LogIn";
 import axios from "axios";
@@ -33,6 +40,9 @@ import NetInfo from "@react-native-community/netinfo";
 import { getIpAddressAsync } from "expo-network";
 import { MY_IP } from "../components/config";
 import dayjs from "dayjs";
+import * as ImagePicker from "expo-image-picker";
+import { Dropdown } from "react-native-element-dropdown";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 const Stack = createNativeStackNavigator();
 
@@ -117,6 +127,14 @@ const Home: React.FC<Props> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState([]);
   const [allowed, setAllowed] = useState(false);
+  const [backendErrorMsg, setBackendErrorMsg] = useState([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [studentOrgs, setStudentOrgs] = useState(null);
+  const [isFocus, setIsFocus] = useState(false);
+  const [studentOrg, setStudentOrg] = useState([]);
   // const [auth, setAuth] = useState(false);
 
   const onRefresh = useCallback(() => {
@@ -130,27 +148,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     updateUserLoggedIn();
-    // checkAuth();
   }, []);
-
-  // const checkAuth = async () => {
-  //   try {
-  //     const token = await AsyncStorage.getItem("token");
-  //     const res = await axios.get("http://192.168.1.13:5000/authUser", {
-  //       headers: { "x-auth-token": token },
-  //     });
-
-  //     if (res.data.msg === "Success") {
-  //       setAuth(true);
-  //       console.log("authenticated");
-  //     } else {
-  //       setAuth(false);
-  //       console.log("not auth");
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
 
   const updateUserLoggedIn = async () => {
     axios.defaults.withCredentials = true;
@@ -213,6 +211,25 @@ const Home: React.FC<Props> = ({ navigation }) => {
       } else {
         setAllowed(true);
         console.log("allowed");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentOrgsData();
+  }, []);
+
+  const fetchStudentOrgsData = async () => {
+    try {
+      const res = await axios.get(`http://${MY_IP}:5000/api/studentOrgs`);
+      console.log(res.data[0].name);
+
+      if (res) {
+        setStudentOrg(res.data);
+      } else {
+        console.log("Server Error");
       }
     } catch (error) {
       console.error(error);
@@ -342,6 +359,61 @@ const Home: React.FC<Props> = ({ navigation }) => {
   //   );
   // }
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission needed",
+        "Please grant permission to access your photos"
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const createPost = async () => {
+    // Code here to add post
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await axios.post(
+        `http://${MY_IP}:5000/api/posts`,
+        { title, description, studentOrgs, image },
+        { headers: { "x-auth-token": token } }
+      );
+      console.log("here");
+      if (res.data.errors) {
+        setBackendErrorMsg([res.data.errors[0].msg]);
+        console.log(backendErrorMsg[0]);
+        console.log("Nope");
+      } else {
+        setBackendErrorMsg([]);
+        setTitle("");
+        setDescription("");
+        setImage(null);
+        setModalVisible(false);
+        console.log("submitted");
+        setModalVisible(false);
+        Alert.alert("Success", "Post created successfully!", [{ text: "OK" }], {
+          cancelable: true,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const deletePost = async (postsId) => {
     try {
       // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
@@ -368,7 +440,9 @@ const Home: React.FC<Props> = ({ navigation }) => {
             <Image source={{ uri: item.image }} style={homeStyles.image} />
           )}
           <Text style={homeStyles.postTitle}>{item.title}</Text>
-          {/* <Text style={homeStyles.postDate}>{item.date}</Text> */}
+          <Text style={homeStyles.postDate}>
+            {dayjs(item.createdAt).format("MMMM D, YYYY")}
+          </Text>
           <Text style={homeStyles.postBody}>{item.description}</Text>
         </View>
       </TouchableOpacity>
@@ -390,6 +464,104 @@ const Home: React.FC<Props> = ({ navigation }) => {
         <MyHeaders style={{ opacity }} />
       </Animated.View>
 
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={homeStyles.centeredView}>
+          <View style={homeStyles.modalView}>
+            <View style={homeStyles.modalHeader}>
+              <Text style={homeStyles.modalTitle}>Create New Post</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={homeStyles.modalContent}>
+              <Text style={homeStyles.inputLabel}>Title</Text>
+              <TextInput
+                style={homeStyles.input}
+                value={title}
+                onChangeText={setTitle}
+                placeholder="Enter post title"
+              />
+
+              <Text style={homeStyles.inputLabel}>Content</Text>
+              <TextInput
+                style={[homeStyles.input, homeStyles.textArea]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="What's on your mind?"
+                multiline
+                numberOfLines={4}
+              />
+              <Text style={homeStyles.inputLabel}>Student Org</Text>
+              <Dropdown
+                style={[
+                  createPostStyles.dropdown,
+                  isFocus && { borderColor: "blue" },
+                ]}
+                placeholderStyle={createPostStyles.placeholderStyle}
+                selectedTextStyle={createPostStyles.selectedTextStyle}
+                inputSearchStyle={createPostStyles.inputSearchStyle}
+                iconStyle={createPostStyles.iconStyle}
+                data={studentOrg}
+                search
+                maxHeight={300}
+                labelField="name"
+                valueField="name"
+                placeholder={!isFocus ? "Choose Student Org..." : "..."}
+                searchPlaceholder="Search..."
+                value={studentOrgs}
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={(item) => {
+                  setStudentOrgs(item.name);
+                  setIsFocus(false);
+                }}
+                renderLeftIcon={() => (
+                  <AntDesign
+                    style={createPostStyles.icon}
+                    color={isFocus ? "blue" : "black"}
+                    name="Safety"
+                    size={20}
+                  />
+                )}
+              />
+
+              <Text style={homeStyles.inputLabel}>Image</Text>
+              <TouchableOpacity
+                style={homeStyles.imagePicker}
+                onPress={pickImage}
+              >
+                {image ? (
+                  <Image
+                    source={{ uri: image }}
+                    style={homeStyles.previewImage}
+                  />
+                ) : (
+                  <View style={homeStyles.placeholderImage}>
+                    <Ionicons name="image-outline" size={40} color="#aaa" />
+                    <Text style={homeStyles.placeholderText}>
+                      Tap to select an image
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={homeStyles.postButton}
+                onPress={createPost}
+              >
+                <Text style={homeStyles.postButtonText}>Create Post</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       {/* Content */}
       <Animated.View style={[homeStyles.postsSection, { paddingBottom: 85 }]}>
         <Animated.FlatList
@@ -410,6 +582,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
           onMomentumScrollEnd={onMomentumScrollEnd}
           onScrollEndDrag={onScrollEndDrag}
           scrollEventThrottle={1}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -437,7 +610,8 @@ const Home: React.FC<Props> = ({ navigation }) => {
                 if (index === 1) {
                   navigation.navigate("BrowseOrgs");
                 } else if (index === 2) {
-                  navigation.navigate("CreatePost");
+                  // setModalVisible(true);
+                  navigation.navigate("CreateEvents");
                 } else if (index === 3) {
                   navigation.navigate("Calendar");
                 } else if (index === 4) {
@@ -453,12 +627,9 @@ const Home: React.FC<Props> = ({ navigation }) => {
               />
             </TouchableOpacity>
           ))}
-          {/* <MyHeaders back /> */}
         </Surface>
       </Animated.View>
     </>
-    //   ) : null}
-    // </>
   );
 };
 

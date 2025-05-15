@@ -16,6 +16,13 @@ const PostsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  image: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = Posts = mongoose.model("posts", PostsSchema);
