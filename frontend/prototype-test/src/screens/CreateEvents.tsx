@@ -11,11 +11,12 @@ import {
   Button,
   RefreshControl,
   Platform,
+  TextInput,
 } from "react-native";
 import { COLORS } from "../components/colors";
 import { Props } from "../navigation/props";
 import MyHeaders from "./MyHeader";
-import { Surface, TextInput } from "react-native-paper";
+import { Surface } from "react-native-paper";
 import Icons, { icon } from "../components/Icons";
 import axios from "axios";
 import { createPostStyles, headerStyles } from "../styles/styles";
@@ -25,6 +26,9 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MY_IP } from "../components/config";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import DateComp from "../components/DateComp";
+import { dateCompStyles } from "../styles/styles";
+import { FontAwesome6 } from "@expo/vector-icons";
 
 const HEADER_EXPANDED = 120;
 const HEADER_COLLAPSED = 120;
@@ -35,16 +39,20 @@ const CreateEvents: React.FC<Props> = ({ navigation }) => {
   const scrollY = useRef(new Animated.Value(0)).current;
   const offsetAnim = useRef(new Animated.Value(0)).current;
 
-  const [date, setDate] = useState(new Date());
-  const [mode, setMode] = useState("date");
-  const [show, setShow] = useState(false);
-  const [text, setText] = useState("Empty");
+  const [fromShow, setFromShow] = useState(false);
+  const [toShow, setToShow] = useState(false);
+  const [showFromTime, setFromShowTime] = useState(false);
+  const [showToTime, setToShowTime] = useState(false);
+  const [eventDateFrom, setEventDateFrom] = useState<Date | null>();
+
+  const [eventDateTo, setEventDateTo] = useState<Date | null>();
 
   const [studentOrgs, setStudentOrgs] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [studentOrg, setStudentOrg] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [eventPlace, setEventPlace] = useState("");
   const [backendErrorMsg, setBackendErrorMsg] = useState([]);
 
   useEffect(() => {
@@ -169,30 +177,36 @@ const CreateEvents: React.FC<Props> = ({ navigation }) => {
     extrapolate: "clamp",
   });
 
-  const onChangeDate = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === "ios");
-    setDate(currentDate);
+  const onChangeFromDate = (event, selectedDate) => {
+    setFromShow(false);
 
-    let tempDate = new Date(currentDate);
-    let fDate =
-      tempDate.getDate() +
-      "/" +
-      (tempDate.getMonth() + 1) +
-      "/" +
-      tempDate.getFullYear();
-
-    let fTime =
-      "Hours" + tempDate.getHours() + " | Minutes: " + tempDate.getMinutes();
-
-    setText(fDate + "\n" + fTime);
-
-    console.log(fDate + "(" + fTime + ")");
+    if (selectedDate) {
+      setEventDateFrom(selectedDate);
+    }
   };
 
-  const showMode = (currentMode) => {
-    setShow(true);
-    setMode(currentMode);
+  const onChangeFromTime = (event, selectedDate) => {
+    setFromShowTime(false);
+
+    if (selectedDate) {
+      setEventDateFrom(selectedDate);
+    }
+  };
+
+  const onChangeToDate = (event, selectedDate) => {
+    setToShow(false);
+
+    if (selectedDate) {
+      setEventDateTo(selectedDate);
+    }
+  };
+
+  const onChangeToTime = (event, selectedDate) => {
+    setToShowTime(false);
+
+    if (selectedDate) {
+      setEventDateTo(selectedDate);
+    }
   };
 
   const addPost = async () => {
@@ -206,6 +220,35 @@ const CreateEvents: React.FC<Props> = ({ navigation }) => {
         { headers: { "x-auth-token": token } }
       );
       console.log("here");
+      if (res.data.errors) {
+        setBackendErrorMsg([res.data.errors[0].msg]);
+        console.log("Nope");
+      } else {
+        setBackendErrorMsg([]);
+        console.log("submitted");
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const createEvent = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await axios.post(
+        `http://${MY_IP}:5000/api/events/${studentOrgs?._id}`,
+        {
+          title,
+          description,
+          eventDateFrom,
+          eventDateTo,
+          eventPlace,
+        },
+        { headers: { "x-auth-token": token } }
+      );
+
       if (res.data.errors) {
         setBackendErrorMsg([res.data.errors[0].msg]);
         console.log("Nope");
@@ -275,6 +318,7 @@ const CreateEvents: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={{
           paddingTop: HEADER_EXPANDED + 16,
           paddingBottom: 32,
+          padding: 10,
         }}
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
@@ -288,11 +332,19 @@ const CreateEvents: React.FC<Props> = ({ navigation }) => {
           placeholder="Enter Title"
           value={title}
           onChangeText={setTitle}
+          style={dateCompStyles.inputContainer}
         />
         <TextInput
           placeholder="Enter Description"
           value={description}
           onChangeText={setDescription}
+          style={dateCompStyles.inputContainer}
+        />
+        <TextInput
+          placeholder="Enter Place of Event"
+          value={eventPlace}
+          onChangeText={setEventPlace}
+          style={dateCompStyles.inputContainer}
         />
         {renderLabel()}
         <Dropdown
@@ -312,11 +364,11 @@ const CreateEvents: React.FC<Props> = ({ navigation }) => {
           valueField="name"
           placeholder={!isFocus ? "Choose Student Org..." : "..."}
           searchPlaceholder="Search..."
-          value={studentOrgs}
+          value={studentOrgs?.name}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onChange={(item) => {
-            setStudentOrgs(item.name);
+            setStudentOrgs(item);
             setIsFocus(false);
           }}
           renderLeftIcon={() => (
@@ -328,29 +380,138 @@ const CreateEvents: React.FC<Props> = ({ navigation }) => {
             />
           )}
         />
+        {/* <View style={{ flex: 1, justifyContent: "center" }}>
+          <DateComp />
+        </View> */}
 
-        <Text>{text}</Text>
-        <Button title="Pick a Date" onPress={() => showMode("date")} />
-        <Button title="Pick a time" onPress={() => showMode("time")} />
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <>
+            <Text style={{ fontWeight: 700, fontSize: 20 }}>From Date</Text>
+            <Text>Date</Text>
+            <TouchableOpacity
+              onPress={() => setFromShow(true)}
+              style={dateCompStyles.inputContainer}
+            >
+              <FontAwesome6 name="calendar" size={20} color="#888" />
+              <TextInput
+                placeholder="Date"
+                editable={false}
+                value={
+                  eventDateFrom
+                    ? new Date(eventDateFrom).toLocaleDateString()
+                    : ""
+                }
+              />
+            </TouchableOpacity>
+            {/* <Text>{formData.date}</Text> */}
+            {fromShow && (
+              <DateTimePicker
+                value={new Date()}
+                mode="date"
+                display="default"
+                onChange={onChangeFromDate}
+              />
+            )}
+          </>
+          <>
+            <Text>Time</Text>
+            <TouchableOpacity
+              onPress={() => setFromShowTime(true)}
+              style={dateCompStyles.inputContainer}
+            >
+              <FontAwesome6 name="clock" size={20} color="#888" />
+              <TextInput
+                placeholder="Time"
+                editable={false}
+                value={
+                  eventDateFrom
+                    ? new Date(eventDateFrom).toLocaleTimeString("en-US")
+                    : ""
+                }
+                style={dateCompStyles.input}
+              />
+            </TouchableOpacity>
+            {/* <Text>{formData.date}</Text> */}
+            {showFromTime && (
+              <DateTimePicker
+                value={new Date(eventDateFrom)}
+                mode="time"
+                display="default"
+                onChange={onChangeFromTime}
+              />
+            )}
+          </>
+        </View>
+        <Text>{eventDateFrom?.toJSON()}</Text>
+        {/* <Text>{fromFormData.time}</Text> */}
 
-        {show && (
-          <DateTimePicker
-            testID="dateTimePicker"
-            value={date}
-            mode={mode}
-            is24Hour={true}
-            display="default"
-            onChange={onChangeDate}
-          />
-        )}
-
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <>
+            <Text style={{ fontWeight: 700, fontSize: 20 }}>To Date</Text>
+            <Text>Date</Text>
+            <TouchableOpacity
+              onPress={() => setToShow(true)}
+              style={dateCompStyles.inputContainer}
+              disabled={eventDateFrom ? false : true}
+            >
+              <FontAwesome6 name="calendar" size={20} color="#888" />
+              <TextInput
+                placeholder="Date"
+                editable={false}
+                value={
+                  eventDateTo ? new Date(eventDateTo).toLocaleDateString() : ""
+                }
+              />
+            </TouchableOpacity>
+            {/* <Text>{formData.date}</Text> */}
+            {toShow && (
+              <DateTimePicker
+                value={new Date()}
+                mode="date"
+                display="default"
+                onChange={onChangeToDate}
+              />
+            )}
+          </>
+          <>
+            <Text>Time</Text>
+            <TouchableOpacity
+              onPress={() => setToShowTime(true)}
+              style={dateCompStyles.inputContainer}
+              disabled={eventDateFrom ? false : true}
+            >
+              <FontAwesome6 name="clock" size={20} color="#888" />
+              <TextInput
+                placeholder="Time"
+                editable={false}
+                value={
+                  eventDateTo
+                    ? new Date(eventDateTo).toLocaleTimeString("en-US")
+                    : ""
+                }
+                style={dateCompStyles.input}
+              />
+            </TouchableOpacity>
+            {/* <Text>{formData.date}</Text> */}
+            {showToTime && (
+              <DateTimePicker
+                value={new Date(eventDateTo)}
+                mode="time"
+                display="default"
+                onChange={onChangeToTime}
+              />
+            )}
+            <Text>{eventDateTo?.toJSON()}</Text>
+            {/* <Text>{toFormData.time}</Text> */}
+          </>
+        </View>
         {backendErrorMsg
           ? backendErrorMsg.map((error, index) => (
               <Text key={index}>{error}</Text>
             ))
           : null}
 
-        <Button title="Submit" color="green" onPress={() => {}} />
+        <Button title="Submit" color="green" onPress={createEvent} />
       </Animated.ScrollView>
     </>
   );

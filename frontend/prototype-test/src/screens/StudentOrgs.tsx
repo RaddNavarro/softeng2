@@ -23,6 +23,7 @@ import Feather from "react-native-vector-icons/Feather";
 import { MY_IP } from "../components/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import dayjs from "dayjs";
 
 const dummyPosts = [
   { id: "1", title: "Insert post here hehe hoho", username: "User One" },
@@ -46,12 +47,12 @@ const HEADER_COLLAPSED = 120;
 const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
   const { studentOrgsData } = route.params;
 
-  const [posts, setPosts] = useState([]);
+  const [events, setEvents] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchPosts();
+    fetchEvents();
   }, []);
 
   useEffect(() => {
@@ -70,25 +71,24 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    fetchPosts();
+    fetchEvents();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchEvents = async () => {
     try {
-      // In the Ip address, change the ip address to your OWN ipv4 address which can be found in the cmd and typing 'ipconfig'
-      const res = await axios.get(`http://${MY_IP}:5000/api/posts`);
+      const res = await axios.get(`http://${MY_IP}:5000/api/events`);
 
       if (res) {
-        let postsArray = [];
+        let eventsArray = [];
         res.data.map((data) => {
-          if (data.studentOrgs === studentOrgsData.name) {
-            postsArray.push(data);
+          if (data.studentOrg.name === studentOrgsData.name) {
+            eventsArray.push(data);
           }
         });
 
-        setPosts(postsArray);
+        setEvents(eventsArray);
       } else {
-        setPosts([]);
+        setEvents([]);
       }
     } catch (error) {
       console.log(error);
@@ -371,7 +371,7 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
                   marginBottom: 4,
                 }}
               >
-                Insert event here wow it's happening on
+                Insert announcements here wow it's happening on
               </Text>
               <Text style={{ fontSize: 12, color: "#555" }}>
                 24/1/1291 : 8:00AM - 10:00AM
@@ -392,11 +392,11 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Posts */}
-        {posts ? (
+        {/* EVENTS */}
+        {events ? (
           <View style={{ paddingHorizontal: 16 }}>
             <FlatList
-              data={posts}
+              data={events}
               keyExtractor={(item) => item._id}
               ListEmptyComponent={() => (
                 <Text style={{ fontSize: 20 }}>No posts available</Text>
@@ -427,8 +427,18 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
                     >
                       {item.title}
                     </Text>
+                    <Text style={{ fontSize: 14, color: "#333" }}>
+                      {item.description}
+                    </Text>
                     <Text style={{ fontSize: 13, color: "#666" }}>
-                      {item.profile.firstName} {item.profile.lastName}
+                      {dayjs(item.eventDateFrom).format("MMMM D, YYYY")}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: "#666" }}>
+                      {dayjs(item.eventDateFrom).format("hh:mm A")} -{" "}
+                      {dayjs(item.eventDateTo).format("hh:mm A")}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: "#666" }}>
+                      {item.studentOrg.name}
                     </Text>
                   </View>
                   <View

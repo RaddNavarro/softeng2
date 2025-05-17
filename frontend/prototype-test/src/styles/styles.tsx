@@ -440,3 +440,39 @@ export const createPostStyles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+export const dateCompStyles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: "fff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: 320,
+  },
+  label: {
+    fontWeight: "600",
+    marginBottom: 5,
+    color: "#888",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    gap: 5,
+    width: 220,
+  },
+  input: {
+    flex: 1,
+    paddingLeft: 10,
+    fontSize: 14,
+    color: "#333",
+  },
+});
