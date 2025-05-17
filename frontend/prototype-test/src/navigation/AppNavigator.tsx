@@ -32,6 +32,7 @@ import CreatePost from "../screens/CreateEvents";
 import ViewPost from "../screens/ViewPost";
 import { MY_IP } from "../components/config";
 import CreateEvents from "../screens/CreateEvents";
+import DateComp from "../components/DateComp";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -181,6 +182,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Calendar" component={Calendar} />
         <Stack.Screen name="StudentOrgs" component={StudentOrgs} />
         <Stack.Screen name="ViewPost" component={ViewPost} />
+        {/* <Stack.Screen name="DateComp" component={DateComp} /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );

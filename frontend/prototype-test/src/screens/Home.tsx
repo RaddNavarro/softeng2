@@ -117,7 +117,7 @@ const EventsSection = () => {
           contentContainerStyle={homeStyles.horizontalList}
         />
       )}
-      <Text style={homeStyles.postSectionTitle}>Latest Posts</Text>
+      <Text style={homeStyles.postSectionTitle}>Latest Events</Text>
     </Animated.View>
   );
 };
@@ -125,7 +125,7 @@ const EventsSection = () => {
 const Home: React.FC<Props> = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [posts, setPosts] = useState([]);
+  const [events, setEvents] = useState([]);
   const [allowed, setAllowed] = useState(false);
   const [backendErrorMsg, setBackendErrorMsg] = useState([]);
   const [title, setTitle] = useState("");
@@ -142,7 +142,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
     setTimeout(() => {
       setRefreshing(false);
-      fetchPosts();
+      fetchEvents();
     }, 2000);
   }, []);
 
@@ -177,21 +177,21 @@ const Home: React.FC<Props> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, [posts]);
+    fetchEvents();
+  }, [events]);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchEvents = async () => {
     try {
-      const res = await axios.get(`http://${MY_IP}:5000/api/posts`);
+      const res = await axios.get(`http://${MY_IP}:5000/api/events`);
 
       if (res) {
-        setPosts(res.data);
+        setEvents(res.data);
       } else {
-        setPosts([]);
+        setEvents([]);
       }
     } catch (error) {
       console.log(error);
@@ -430,19 +430,22 @@ const Home: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const RenderPosts = ({ item }) => {
+  const RenderEvents = ({ item }) => {
     return (
-      <TouchableOpacity
-        onPress={() => navigation.navigate("ViewPost", { postData: item })}
-      >
+      <TouchableOpacity>
         <View key={item.id} style={homeStyles.card}>
           {item.image && (
             <Image source={{ uri: item.image }} style={homeStyles.image} />
           )}
           <Text style={homeStyles.postTitle}>{item.title}</Text>
           <Text style={homeStyles.postDate}>
-            {dayjs(item.createdAt).format("MMMM D, YYYY")}
+            {dayjs(item.eventDateFrom).format("MMMM D, YYYY")}
           </Text>
+          <Text style={homeStyles.postDate}>
+            {dayjs(item.eventDateFrom).format("hh:mm A")} -{" "}
+            {dayjs(item.eventDateTo).format("hh:mm A")}
+          </Text>
+
           <Text style={homeStyles.postBody}>{item.description}</Text>
         </View>
       </TouchableOpacity>
@@ -571,9 +574,9 @@ const Home: React.FC<Props> = ({ navigation }) => {
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
             { useNativeDriver: true }
           )}
-          data={posts}
+          data={events}
           keyExtractor={(item, index) => item.title + index.toString()}
-          renderItem={RenderPosts}
+          renderItem={RenderEvents}
           ListEmptyComponent={() => (
             <Text style={{ fontSize: 20 }}>No posts available</Text>
           )}

@@ -34,6 +34,7 @@ router.post(
       eventDateFrom,
       eventDateTo,
       eventPlace,
+      image,
     } = req.body;
 
     //Build events object
@@ -45,6 +46,7 @@ router.post(
     if (eventDateFrom) eventsFields.eventDateFrom = eventDateFrom;
     if (eventDateTo) eventsFields.eventDateTo = eventDateTo;
     if (eventPlace) eventsFields.eventPlace = eventPlace;
+    if (image) eventsFields.image = image;
     try {
       // Create
       let events = new Events(eventsFields);
@@ -56,5 +58,15 @@ router.post(
     }
   }
 );
+
+router.get("/", async (req, res) => {
+  try {
+    const events = await Events.find().populate("studentOrg");
+    res.json(events);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server error");
+  }
+});
 
 module.exports = router;

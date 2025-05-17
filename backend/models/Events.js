@@ -18,16 +18,19 @@ const EventsSchema = new mongoose.Schema({
   //   required: true,
   // },
   eventDateFrom: {
-    type: String,
+    type: Date,
     required: true,
   },
   eventDateTo: {
-    type: String,
+    type: Date,
     required: true,
   },
   eventPlace: {
     type: String,
     required: true,
+  },
+  image: {
+    type: String,
   },
   // optional
   // priority: {
