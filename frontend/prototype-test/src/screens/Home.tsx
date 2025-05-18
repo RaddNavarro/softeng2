@@ -135,6 +135,8 @@ const Home: React.FC<Props> = ({ navigation }) => {
   const [studentOrgs, setStudentOrgs] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [studentOrg, setStudentOrg] = useState([]);
+  const [profile, setProfile] = useState();
+  const [permission, setPermission] = useState(false);
   // const [auth, setAuth] = useState(false);
 
   const onRefresh = useCallback(() => {
@@ -184,6 +186,10 @@ const Home: React.FC<Props> = ({ navigation }) => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    hasPermission();
+  }, [profile]);
+
   const fetchEvents = async () => {
     try {
       const res = await axios.get(`http://${MY_IP}:5000/api/events`);
@@ -194,7 +200,8 @@ const Home: React.FC<Props> = ({ navigation }) => {
         setEvents([]);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      console.log("bruhh home");
     }
   };
 
@@ -206,14 +213,33 @@ const Home: React.FC<Props> = ({ navigation }) => {
       });
 
       if (res.data.msg === "There is no profile for this user") {
-        setAllowed(false);
-        console.log("not allowed");
+        console.log(res.data.msg);
       } else {
-        setAllowed(true);
-        console.log("allowed");
+        setProfile(res.data);
       }
     } catch (error) {
       console.error(error);
+      console.log("bruhhh homee");
+    }
+  };
+
+  const hasPermission = () => {
+    let rolesArray = [
+      "head",
+      "eventPoster",
+      "creatives",
+      "producer",
+      "viceHead",
+    ];
+
+    if (profile) {
+      profile.orgStatus.forEach((data) => {
+        if (rolesArray.includes(data.orgRole)) {
+          setPermission(true);
+        }
+      });
+    } else {
+      setPermission(false);
     }
   };
 
@@ -233,6 +259,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
       }
     } catch (error) {
       console.error(error);
+      console.log("bruhhh student org fetch home");
     }
   };
 
@@ -606,15 +633,20 @@ const Home: React.FC<Props> = ({ navigation }) => {
         <Surface style={headerStyles.rowContainer}>
           {tabIcons.map((item, index) => (
             <TouchableOpacity
-              disabled={index === 2 ? (allowed ? false : true) : false}
+              disabled={index === 2 ? (permission ? false : true) : false}
               key={index}
-              style={[index === 2 && headerStyles.plusIconStyles]}
+              style={[
+                index === 2 && permission
+                  ? headerStyles.plusIconStyles
+                  : index === 2 && { display: "none" },
+              ]}
               onPress={() => {
                 if (index === 1) {
                   navigation.navigate("BrowseOrgs");
                 } else if (index === 2) {
                   // setModalVisible(true);
                   navigation.navigate("CreateEvents");
+                  // console.log()
                 } else if (index === 3) {
                   navigation.navigate("Calendar");
                 } else if (index === 4) {

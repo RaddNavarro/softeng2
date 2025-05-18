@@ -16,7 +16,7 @@ router.get("/me", auth, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id }).populate(
       "user",
-      ["email"]
+      ["email", "role"]
     );
 
     if (!profile) {
@@ -65,10 +65,6 @@ router.post(
       yearLvl,
       orgStatus,
     } = req.body;
-
-    // const {
-    //   orgStatus: [{ orgName, orgRole }],
-    // } = req.body;
 
     //Build profile object
     const profileFields = {};

@@ -67,6 +67,7 @@ const LogIn: React.FC<Props> = ({ navigation }) => {
       }
     } catch (error) {
       console.log(error);
+      console.log("bruhhh logn");
     }
   };
 

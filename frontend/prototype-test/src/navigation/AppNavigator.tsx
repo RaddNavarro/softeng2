@@ -139,12 +139,9 @@ const AppNavigator = () => {
           const res2 = await axios.get(`http://${MY_IP}:5000/authUser`, {
             headers: { "x-auth-token": token },
           });
-          if (res2.data.msg === "Success") {
+          if (res2.data.msg === "User is authenticated") {
             setIsLoggedIn(status === "true");
             console.log("authenticated");
-          } else if (res2.data.msg === "Token is not valid") {
-            setIsLoggedIn(status === "false");
-            console.log("not auth");
           } else {
             setIsLoggedIn(status === "false");
             console.log("not auth");
