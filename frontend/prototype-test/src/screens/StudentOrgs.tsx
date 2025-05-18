@@ -25,20 +25,25 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import dayjs from "dayjs";
 
-const dummyPosts = [
-  { id: "1", title: "Insert post here hehe hoho", username: "User One" },
-  { id: "2", title: "Insert post here hehe hoho", username: "User Two" },
-  { id: "3", title: "Insert post here hehe hoho", username: "User Three" },
-  { id: "4", title: "Insert post here hehe hoho", username: "User Four" },
-  { id: "5", title: "Insert post here hehe hoho", username: "User Five" },
-];
-
 const tabIcons = [
   { ico1: "home", ico2: "home-outline", type: icon.Ionicons },
   { ico1: "people", ico2: "people-outline", type: icon.Ionicons },
   { ico1: "add-outline", ico2: "add-outline", type: icon.Ionicons },
   { ico1: "calendar", ico2: "calendar-outline", type: icon.Ionicons },
   { ico1: "person", ico2: "person-outline", type: icon.Ionicons },
+];
+
+const members = [
+  { id: "1", name: "member 1" },
+  { id: "2", name: "member 2" },
+  { id: "3", name: "member 3" },
+  { id: "4", name: "member 4" },
+  { id: "5", name: "member 5" },
+  { id: "6", name: "member 6" },
+  { id: "7", name: "member 7" },
+  { id: "8", name: "member 8" },
+  { id: "9", name: "member 9" },
+  { id: "10", name: "member 10" },
 ];
 
 const HEADER_EXPANDED = 210;
@@ -49,6 +54,10 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
 
   const [events, setEvents] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profiles, setProfiles] = useState([]);
+  const [members, setMembers] = useState([]);
+  const slideAnim = useRef(new Animated.Value(400)).current;
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -74,6 +83,10 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
     fetchEvents();
   }, []);
 
+  useEffect(() => {
+    fetchProfiles();
+  }, []);
+
   const fetchEvents = async () => {
     try {
       const res = await axios.get(`http://${MY_IP}:5000/api/events`);
@@ -94,6 +107,39 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
       console.log(error);
     }
   };
+
+  const fetchProfiles = async () => {
+    try {
+      let membersArray = [];
+      const res = await axios.get(`http://${MY_IP}:5000/api/profile`);
+      res.data.forEach((profile) => {
+        profile.orgStatus.forEach((stat) => {
+          if (stat.orgID === studentOrgsData._id) {
+            membersArray.push(profile);
+          }
+        });
+      });
+      setMembers(membersArray);
+
+      if (res) {
+        setProfiles(res.data);
+      } else {
+        setProfiles([]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // const filterProfile = () => {
+  //   profiles.forEach((profile) => {
+  //     profile.orgStatus.forEach((stat) => {
+  //       if (stat.orgID === studentOrgsData._id) {
+  //         setMembers((prev) => [...prev, profile]);
+  //       }
+  //     });
+  //   });
+  // };
 
   const HEADER_HEIGHT = 150;
 
@@ -187,14 +233,22 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
     outputRange: [0, -10],
     extrapolate: "clamp",
   });
+  function openSlideMenu() {
+    setMenuOpen(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }
 
-  const showToast = () => {
-    Toast.show({
-      type: "error",
-      text1: "Already a member",
-      visibilityTime: 10000,
-    });
-  };
+  function closeSlideMenu() {
+    Animated.timing(slideAnim, {
+      toValue: 400,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => setMenuOpen(false));
+  }
 
   const joinOrg = async () => {
     try {
@@ -324,6 +378,51 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
         onPress={() => navigation.goBack()}
       >
         <Feather name="arrow-left" size={32} color="white" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={openSlideMenu}
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 16,
+          width: 32,
+          height: 32,
+          // justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "rgba(255,255,255,0.25)",
+          borderRadius: 16,
+          zIndex: 10,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          paddingHorizontal: 5,
+        }}
+      >
+        {/* 3 dots */}
+        <View
+          style={{
+            width: 6,
+            height: 6,
+            backgroundColor: "#fff",
+            borderRadius: 3,
+          }}
+        />
+        <View
+          style={{
+            width: 6,
+            height: 6,
+            backgroundColor: "#fff",
+            borderRadius: 3,
+          }}
+        />
+        <View
+          style={{
+            width: 6,
+            height: 6,
+            backgroundColor: "#fff",
+            borderRadius: 3,
+          }}
+        />
       </TouchableOpacity>
 
       <Animated.ScrollView
@@ -457,6 +556,88 @@ const StudentOrgs: React.FC<Props> = ({ navigation, route }) => {
           </View>
         ) : null}
       </Animated.ScrollView>
+
+      {menuOpen && (
+        <Animated.View
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            right: 0,
+            width: "100%",
+            backgroundColor: "#ffffff",
+            transform: [{ translateX: slideAnim }],
+            zIndex: 20,
+            paddingTop: 60,
+            paddingHorizontal: 20,
+          }}
+        >
+          {/* Close Button */}
+          <TouchableOpacity
+            onPress={closeSlideMenu}
+            style={{ alignSelf: "flex-end", marginBottom: 20 }}
+          >
+            <Text
+              style={{ fontSize: 16, color: "#278086", fontWeight: "bold" }}
+            >
+              Close
+            </Text>
+          </TouchableOpacity>
+
+          {/* Members List */}
+          <FlatList
+            data={members}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            renderItem={({ item }) => (
+              <TouchableOpacity>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 12,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#eee",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      backgroundColor: "#d8dee2",
+                      borderRadius: 20,
+                      marginRight: 16,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#555", fontWeight: "bold" }}>
+                      {item.firstName.charAt(0)}
+                      {item.lastName.charAt(0)}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 16, color: "#333" }}>
+                    {item.firstName} {item.lastName}
+                  </Text>
+                  {item.orgStatus &&
+                    item.orgStatus.map((stat) => {
+                      if (stat.orgID === studentOrgsData._id) {
+                        return (
+                          <Text
+                            style={{ marginLeft: 10, color: "grey" }}
+                            key={stat.orgID}
+                          >
+                            {stat.orgRole}
+                          </Text>
+                        );
+                      }
+                    })}
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        </Animated.View>
+      )}
 
       <Animated.View
         style={[

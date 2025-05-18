@@ -8,6 +8,8 @@ import {
   BackHandler,
   Alert,
   Animated,
+  Switch,
+  ScrollView,
 } from "react-native";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { Props } from "../navigation/props";
@@ -18,16 +20,24 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Icons, { icon } from "../components/Icons";
 import MyHeaders from "./MyHeader";
+import Feather from "react-native-vector-icons/Feather";
 import { Surface } from "react-native-paper";
 import { COLORS } from "../components/colors";
 import { MY_IP } from "../components/config";
 
-const dummyPosts = [
-  { id: "1", title: "Insert post here hehe hoho", username: "User One" },
-  { id: "2", title: "Insert post here hehe hoho", username: "User Two" },
-  { id: "3", title: "Insert post here hehe hoho", username: "User Three" },
-  { id: "4", title: "Insert post here hehe hoho", username: "User Four" },
-  { id: "5", title: "Insert post here hehe hoho", username: "User Five" },
+const profileDetails = {
+  id: "user001",
+  name: "RandomNameHere",
+  bio: "Quick Bio Insert Here//role maybe? like student/teacher/head of org ",
+};
+
+const dummyInfo = [
+  { id: "memberSince", label: "Member Since", value: "January 2021" },
+];
+
+const settingToggles = [
+  { id: "notifications", label: "Push Notifications", value: true },
+  { id: "emailUpdates", label: "Email Updates", value: true },
 ];
 
 const tabIcons = [
@@ -47,7 +57,7 @@ const Profile: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [profile]);
 
   const fetchData = async () => {
     await AsyncStorage.getItem("token");
@@ -72,6 +82,7 @@ const Profile: React.FC<Props> = ({ navigation }) => {
       }
     } catch (error) {
       console.log(error);
+      console.log("bruhh why profile");
     }
   };
 
@@ -94,6 +105,7 @@ const Profile: React.FC<Props> = ({ navigation }) => {
     AsyncStorage.removeItem("token");
 
     navigation.navigate("LogIn");
+    console.log("out");
   }
 
   const HEADER_HEIGHT = 150;
@@ -174,34 +186,192 @@ const Profile: React.FC<Props> = ({ navigation }) => {
 
   return (
     <>
-      <Animated.View
-        style={[
-          headerStyles.view,
-          {
-            top: 0,
-            zIndex: 1,
-            transform: [{ translateY: headerTranslate }],
-          },
-        ]}
-      >
-        <MyHeaders back style={{ opacity }} />
-      </Animated.View>
       <View
-        style={[logInStyles.container, { backgroundColor: COLORS.mintCream }]}
+        style={{
+          backgroundColor: "#278086",
+          paddingTop: 60,
+          paddingBottom: 32,
+          borderBottomLeftRadius: 24,
+          borderBottomRightRadius: 24,
+          paddingHorizontal: 16,
+        }}
       >
-        <Text>Profile Page</Text>
-        {profile !== undefined && profile.user !== undefined ? (
-          <>
-            <Text>{profile.firstName}</Text>
-            <Text>{profile.user.email}</Text>
-          </>
-        ) : (
-          <Text>There is no profile for this user yet</Text>
-        )}
-        <TouchableOpacity onPress={signOut}>
-          <Text>Sign Out</Text>
+        <TouchableOpacity
+          style={{
+            position: "absolute",
+            top: 20,
+            left: 16,
+            width: 32,
+            height: 32,
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 16,
+            zIndex: 10,
+          }}
+          onPress={() => navigation.goBack()}
+        >
+          <Feather name="arrow-left" size={32} color="white" />
         </TouchableOpacity>
+
+        <View
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: 12,
+            padding: 16,
+            elevation: 3,
+            shadowColor: "#000",
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            marginTop: 32,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              backgroundColor: "#d8dee2",
+              borderRadius: 20,
+              marginRight: 16,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {profile && (
+              <Text style={{ color: "#555", fontWeight: "bold", fontSize: 30 }}>
+                {profile.firstName.charAt(0)}
+                {profile.lastName.charAt(0)}
+              </Text>
+            )}
+          </View>
+          <View style={{ flex: 1 }}>
+            {profile && (
+              <>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "bold",
+                    color: "#333",
+                    marginBottom: 4,
+                  }}
+                >
+                  {profile.firstName} {profile.lastName}
+                </Text>
+                <Text style={{ fontSize: 14, color: "#2e7d32" }}>
+                  {/* {profile.bio} */}
+                </Text>
+              </>
+            )}
+          </View>
+        </View>
       </View>
+
+      <ScrollView
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 32,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Dummy Info Section */}
+        <View
+          style={{
+            backgroundColor: "#ffffff",
+            marginTop: 24,
+            borderRadius: 16,
+            padding: 16,
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOpacity: 0.05,
+            shadowRadius: 3,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "bold",
+              marginBottom: 12,
+              color: "#333",
+            }}
+          >
+            Joined Organizations
+          </Text>
+
+          {profile !== undefined ? (
+            profile.orgStatus.map((item) => (
+              <View key={item._id} style={{ marginBottom: 12 }}>
+                <Text
+                  style={{ fontSize: 14, fontWeight: "600", color: "#333" }}
+                >
+                  {item.orgName}
+                </Text>
+                <Text style={{ fontSize: 14, color: "#555" }}>
+                  {item.orgRole}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text>No profile</Text>
+          )}
+        </View>
+
+        {/* Settings Section */}
+        <View
+          style={{
+            backgroundColor: "#ffffff",
+            marginTop: 24,
+            borderRadius: 16,
+            padding: 16,
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOpacity: 0.05,
+            shadowRadius: 3,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "bold",
+              marginBottom: 12,
+              color: "#333",
+            }}
+          >
+            Profile Settings
+          </Text>
+
+          {settingToggles.map((setting) => (
+            <View
+              key={setting.id}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingVertical: 8,
+              }}
+            >
+              <Text style={{ fontSize: 14, color: "#333" }}>
+                {setting.label}
+              </Text>
+              <Switch value={setting.value} />
+            </View>
+          ))}
+          <TouchableOpacity
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: COLORS.fernGreen,
+              borderRadius: 10,
+              marginBottom: 90,
+            }}
+            onPress={signOut}
+          >
+            <Text style={{ color: "#fefefe", padding: 10, fontWeight: 700 }}>
+              LOG OUT
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       <Animated.View
         style={[
