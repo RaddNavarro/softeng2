@@ -1,0 +1,134 @@
+// routes/announcements.js
+const express = require("express");
+const router  = express.Router();
+const auth    = require("../../middleware/auth");
+const { check, validationResult } = require("express-validator");
+
+const Announcements = require("../../models/Announcements"); // <<— new model
+const Profile      = require("../../models/Profile");
+
+/**
+ * @route   POST api/announcements
+ * @desc    Create an announcement
+ * @access  Private (needs auth token)
+ */
+router.post(
+  "/",
+  [
+    auth,
+    [
+      check("title",      "Title is required").trim().not().isEmpty(),
+      check("body",       "Body/description is required").trim().not().isEmpty(),
+      check("org",        "Organization is required").trim().not().isEmpty(),
+      check("eventDate",  "Valid event date is required").isISO8601(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // 422 keeps it REST-y but 200 is okay if you prefer
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    try {
+      // who is posting?
+      const profile = await Profile.findOne({ user: req.user.id }).populate(
+        "user",
+        ["email"]
+      );
+
+      const {
+        title,
+        body,
+        org,
+        eventDate,
+        imageUrl,
+        sticky,
+        tags,
+        expiryDate,
+      } = req.body;
+
+      /* Build announcement object */
+      const annFields = {
+        author: profile._id,
+        title,
+        body,
+        org,
+        eventDate,
+      };
+
+      if (imageUrl)   annFields.imageUrl   = imageUrl;
+      if (sticky)     annFields.sticky     = sticky;
+      if (tags)       annFields.tags       = tags;
+      if (expiryDate) annFields.expiryDate = expiryDate;
+
+      const announcement = new Announcement(annFields);
+      await announcement.save();
+
+      return res.status(201).json(announcement);
+    } catch (err) {
+      console.error(err.message);
+      return res.status(500).send("Server error");
+    }
+  }
+);
+
+/**
+ * @route   GET api/announcements
+ * @desc    Get ALL announcements (public)
+ * @access  Public
+ * Query params supported:
+ *   ?upcoming=true       — only future events
+ *   ?org=Musikalista     — filter by org
+ */
+router.get("/", async (req, res) => {
+  try {
+    const filter = {};
+
+    if (req.query.org) filter.org = req.query.org;
+    if (req.query.upcoming === "true") {
+      filter.eventDate = { $gte: new Date() };
+    }
+
+    const list = await Announcement.find(filter)
+      .populate("author", "user")          // bring back profile if needed
+      .sort({ sticky: -1, eventDate: 1 }); // pin stickies, then nearest dates
+
+    res.json(list);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+/**
+ * @route   DELETE api/announcements/:id
+ * @desc    Delete an announcement
+ * @access  Private
+ * (Optionally: check that req.user.id === author.user)
+ */
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const ann = await Announcement.findById(req.params.id);
+    if (!ann) {
+      return res.status(404).json({ msg: "Announcement not found" });
+    }
+
+    // OPTIONAL OWNERSHIP CHECK:
+    // const profile = await Profile.findOne({ user: req.user.id });
+    // if (ann.author.toString() !== profile._id.toString()) {
+    //   return res.status(401).json({ msg: "User not authorized" });
+    // }
+
+    await ann.deleteOne();
+    return res.send({ msg: "Announcement removed" });
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(404).json({ msg: "Announcement not found" });
+    }
+    res.status(500).send("Server error");
+  }
+});
+
+module.exports = router;
